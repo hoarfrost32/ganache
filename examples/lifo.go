@@ -10,8 +10,7 @@ import (
 
 // runLIFOExample demonstrates the cache with a Last-In, First-Out eviction policy.
 func runLIFOExample() {
-	lifoPolicy := policies.NewLIFO[string]()
-	cache := ganache.New[string, int](3, 0*time.Second, lifoPolicy)
+	cache := ganache.New[string, int](3, 0*time.Second, policies.LIFOPolicy)
 
 	fmt.Println("Putting 'a': 1, 'b': 2, 'c': 3")
 	cache.Put("a", 1)

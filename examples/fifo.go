@@ -10,8 +10,7 @@ import (
 
 // runFIFOExample demonstrates the cache with a First-In, First-Out eviction policy.
 func runFIFOExample() {
-	fifoPolicy := policies.NewFIFO[string]()
-	cache := ganache.New[string, int](3, 0*time.Second, fifoPolicy)
+	cache := ganache.New[string, int](3, 0*time.Second, policies.FIFOPolicy)
 
 	fmt.Println("Putting 'a': 1, 'b': 2, 'c': 3")
 	cache.Put("a", 1)

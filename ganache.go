@@ -3,8 +3,9 @@
 package ganache
 
 import (
-	"github.com/hoarfrost32/ganache/policies"
 	"time"
+
+	"github.com/hoarfrost32/ganache/policies"
 )
 
 // Cache is a generic, in-memory key-value store with a configurable
@@ -19,7 +20,20 @@ type Cache[K comparable, V any] struct {
 // New creates a new Cache.
 // The capacity must be a positive integer. If capacity is zero or negative,
 // the cache will not store any new items.
-func New[K comparable, V any](capacity int, backupInterval time.Duration, policy policies.EvictionPolicy[K]) *Cache[K, V] {
+func New[K comparable, V any](capacity int, backupInterval time.Duration, policyType policies.EvictionPolicyType) *Cache[K, V] {
+	var policy policies.EvictionPolicy[K]
+
+	switch policyType {
+	case policies.FIFOPolicy:
+		policy = policies.NewFIFO[K]()
+	case policies.LIFOPolicy:
+		policy = policies.NewLIFO[K]()
+	case policies.LRUPolicy:
+		policy = policies.NewLRU[K]()
+	default:
+		panic("ganache: unsupported eviction policy type")
+	}
+
 	return &Cache[K, V]{
 		storage:        make(map[K]V),
 		capacity:       capacity,

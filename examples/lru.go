@@ -10,8 +10,7 @@ import (
 
 // runLRUExample demonstrates the cache with a Least Recently Used eviction policy.
 func runLRUExample() {
-	lruPolicy := policies.NewLRU[string]()
-	cache := ganache.New[string, int](3, 0*time.Second, lruPolicy)
+	cache := ganache.New[string, int](3, 0*time.Second, policies.LRUPolicy)
 
 	fmt.Println("Putting 'a': 1, 'b': 2, 'c': 3")
 	cache.Put("a", 1)
