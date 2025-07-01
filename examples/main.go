@@ -21,5 +21,8 @@ func main() {
 	fmt.Println("-------------------------")
 	fmt.Println()
 
+	runBenchmarks()
+	fmt.Println()
+
 	fmt.Println("--- All examples finished ---")
 }

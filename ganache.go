@@ -3,7 +3,7 @@
 package ganache
 
 import (
-	"time"
+	"sync"
 
 	"github.com/hoarfrost32/ganache/policies"
 )
@@ -13,39 +13,34 @@ import (
 type Cache[K comparable, V any] struct {
 	storage        map[K]V
 	capacity       int
-	backupInterval time.Duration
 	policy         policies.EvictionPolicy[K]
+	lock           sync.Mutex
 }
 
 // New creates a new Cache.
 // The capacity must be a positive integer. If capacity is zero or negative,
-// the cache will not store any new items.
-func New[K comparable, V any](capacity int, backupInterval time.Duration, policyType policies.EvictionPolicyType) *Cache[K, V] {
-	var policy policies.EvictionPolicy[K]
-
-	switch policyType {
-	case policies.FIFOPolicy:
-		policy = policies.NewFIFO[K]()
-	case policies.LIFOPolicy:
-		policy = policies.NewLIFO[K]()
-	case policies.LRUPolicy:
-		policy = policies.NewLRU[K]()
-	default:
-		panic("ganache: unsupported eviction policy type")
+// the cache will not store any new items. It returns the new cache and an
+// error if the requested eviction policy is not registered.
+func New[K comparable, V any](capacity int, policyName string) (*Cache[K, V], error) {
+	policy, err := policies.CreatePolicy[K](policyName)
+	if err != nil {
+		return nil, err
 	}
 
 	return &Cache[K, V]{
-		storage:        make(map[K]V),
-		capacity:       capacity,
-		backupInterval: backupInterval,
-		policy:         policy,
-	}
+		storage:  make(map[K]V),
+		capacity: capacity,
+		policy:   policy,
+	}, nil
 }
 
 // Get retrieves a value from the cache for a given key.
 // It returns the value and a boolean that is true if the key was found.
 // Accessing a key with Get marks it as recently used by the eviction policy.
 func (c *Cache[K, V]) Get(key K) (V, bool) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
 	value, found := c.storage[key]
 	if found {
 		c.policy.TrackGet(key)
@@ -60,6 +55,9 @@ func (c *Cache[K, V]) Get(key K) (V, bool) {
 // If the cache was initialized with a capacity of 0 or less, Put is a no-op
 // for new keys.
 func (c *Cache[K, V]) Put(key K, value V) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
 	if c.capacity <= 0 {
 		return
 	}

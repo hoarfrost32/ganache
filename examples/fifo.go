@@ -2,15 +2,17 @@ package main
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/hoarfrost32/ganache"
-	"github.com/hoarfrost32/ganache/policies"
 )
 
 // runFIFOExample demonstrates the cache with a First-In, First-Out eviction policy.
 func runFIFOExample() {
-	cache := ganache.New[string, int](3, 0*time.Second, policies.FIFOPolicy)
+	cache, err := ganache.New[string, int](3, "fifo")
+	if err != nil {
+		fmt.Printf("Failed to create cache: %v\n", err)
+		return
+	}
 
 	fmt.Println("Putting 'a': 1, 'b': 2, 'c': 3")
 	cache.Put("a", 1)
