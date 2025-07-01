@@ -15,12 +15,13 @@
         devShells.default = pkgs.mkShell {
           packages = [
             pkgs.go
-            pkgs.gopls     # lsp
-            pkgs.delve     # debugger
+            pkgs.gopls         # lsp
+            pkgs.delve         # debugger
+            pkgs.golangci-lint # linter
           ];
 
           shellHook = ''
-            echo "✅ Go environment loaded."
+            echo "Go environment loaded."
 
             # Define absolute paths for Go environment variables
             export PROJECT_ROOT="$(pwd)"
